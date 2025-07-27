@@ -39,6 +39,8 @@ def fetch_and_store(lat, lon):
 def index():
     digipin = None
     error = None
+    latitude = None
+    longitude = None
     if request.method == "POST":
         try:
             lat = float(request.form["latitude"])
@@ -48,7 +50,11 @@ def index():
             error = "Please enter valid numeric coordinates."
         except requests.RequestException as e:
             error = f"API error: {e}"
-    return render_template("index.html", digipin=digipin, error=error)
+    return render_template("index.html", digipin=digipin, error=error, latitude=latitude, longitude=longitude)
+
+@app.route("/bookings")
+def bookings():
+    return render_template("bookings.html")
 
 if __name__ == "__main__":
     init_db()

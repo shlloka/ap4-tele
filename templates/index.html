@@ -1,19 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DigiPIN Web App</title>
+    <title>DigiPIN Web App - Get Location</title>
+    <style>
+        /* Simple styles for nav */
+        nav {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #333;
+        }
+        nav a.active {
+            color: #007bff; /* active tab color */
+        }
+    </style>
 </head>
 <body>
-    <h1>Get DigiPIN from Coordinates</h1>
-    <form method="POST">
-        Latitude: <input name="latitude" required><br><br>
-        Longitude: <input name="longitude" required><br><br>
-        <input type="submit" value="Get DigiPIN">
-    </form>
-    {% if digipin %}
-        <h2>DigiPIN: {{ digipin }}</h2>
-    {% elif error %}
-        <h3 style="color:red;">Error: {{ error }}</h3>
+    <nav>
+        <a href="/" class="active">Home</a>
+        <a href="/bookings">Bookings</a>
+    </nav>
+    <h1>Get DigiPIN from Your Current Location</h1>
+
+    <button id="getLocationBtn">Get My Location & DigiPIN</button>
+
+    <div id="result" style="margin-top:20px;"></div>
+
+    <!-- Display fetched latitude, longitude, and DigiPIN if available -->
+    {% if digipin and latitude is defined and longitude is defined %}
+        <div style="margin-top:20px;">
+            <h3>Location and DigiPIN details:</h3>
+            <p><strong>DigiPIN:</strong> {{ digipin }}</p>
+        </div>
     {% endif %}
+
+    <script>
+        const btn = document.getElementById('getLocationBtn');
+        const resultDiv = document.getElementById('result');
+
+        btn.onclick = function() {
+            if (navigator.geolocation) {
+                resultDiv.textContent = "Requesting location permission...";
+                navigator.geolocation.getCurrentPosition(success, error);
+            } else {
+                resultDiv.innerHTML = "Sorry, your browser does not support geolocation.";
+            }
+        };
+
+        function success(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            resultDiv.innerHTML = `Coordinates detected: <b>${lat.toFixed(6)}</b>, <b>${lon.toFixed(6)}</b><br>Fetching DigiPIN...`;
+
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}`
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.documentElement.innerHTML = html;
+            })
+            .catch(() => {
+                resultDiv.innerHTML = "Error contacting server.";
+            });
+        }
+
+        function error(err) {
+            switch(err.code) {
+                case err.PERMISSION_DENIED:
+                    resultDiv.innerHTML = "Permission denied. Cannot access location.";
+                    break;
+                case err.POSITION_UNAVAILABLE:
+                    resultDiv.innerHTML = "Position unavailable.";
+                    break;
+                case err.TIMEOUT:
+                    resultDiv.innerHTML = "Location request timed out.";
+                    break;
+                default:
+                    resultDiv.innerHTML = "An unknown error occurred.";
+            }
+        }
+    </script>
 </body>
 </html>

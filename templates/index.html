@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DigiPIN Web App</title>
+</head>
+<body>
+    <h1>Get DigiPIN from Coordinates</h1>
+    <form method="POST">
+        Latitude: <input name="latitude" required><br><br>
+        Longitude: <input name="longitude" required><br><br>
+        <input type="submit" value="Get DigiPIN">
+    </form>
+    {% if digipin %}
+        <h2>DigiPIN: {{ digipin }}</h2>
+    {% elif error %}
+        <h3 style="color:red;">Error: {{ error }}</h3>
+    {% endif %}
+</body>
+</html>

@@ -36,6 +36,38 @@
     </style>
 </head>
 <body>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkboxes = document.querySelectorAll('.mark-completed-checkbox');
+        
+            checkboxes.forEach(chk => {
+                chk.addEventListener('change', function () {
+                    const bookingId = this.getAttribute('data-booking-id');
+                    const marked = this.checked ? '1' : '0';
+        
+                    const formData = new FormData();
+                    formData.append('marked_as_completed', marked);
+        
+                    fetch(`/update_completion/${bookingId}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert("Failed to update status: " + (data.error || 'Unknown error'));
+                            this.checked = !this.checked;  // revert on failure
+                        }
+                    })
+                    .catch(error => {
+                        alert("Error updating status: " + error);
+                        this.checked = !this.checked;  // revert on error
+                    });
+                });
+            });
+        });
+        </script>
+        
 
     <nav>
         <a href="/">Home</a>
@@ -43,6 +75,32 @@
     </nav>
     <h1>All Bookings</h1>
     {% if bookings %}
+    <form method="get" action="{{ url_for('bookings') }}" id="filterForm">
+        <label for="service_type">Service Type:</label>
+        <select name="service_type" id="service_type">
+            <option value="">-- All --</option>
+            <option value="Free" {% if service_type_filter == 'Free' %}selected{% endif %}>Free</option>
+            <option value="Paid" {% if service_type_filter == 'aria-placeholder=""' %}selected{% endif %}>Paid</option>
+            <option value="Running Repairs" {% if service_type_filter == 'Running Repairs' %}selected{% endif %}>Running Repairs</option>
+        </select>
+      
+        <label for="next_due">Next Service Due:</label>
+        <select name="next_due" id="next_due">
+            <option value="">-- All --</option>
+            <option value="due" {% if next_due_filter == 'due' %}selected{% endif %}>Due (0 or fewer days)</option>
+            <option value="not_due" {% if next_due_filter == 'not_due' %}selected{% endif %}>Not Due (&gt; 0 days)</option>
+        </select>
+      
+        <label for="marked_completed">Completed:</label>
+        <select name="marked_completed" id="marked_completed">
+            <option value="">-- All --</option>
+            <option value="0" {% if marked_completed_filter == '0' %}selected{% endif %}>Not Completed</option>
+            <option value="1" {% if marked_completed_filter == '1' %}selected{% endif %}>Completed</option>
+        </select>
+      
+        <button type="submit">Filter</button>
+      </form>
+      
         <table>
             <tr>
                 <th>ID</th>
@@ -51,7 +109,7 @@
                 <th>Vehicle Model</th>
                 <th>Last Service Date</th>
                 <th>Service Type</th>
-                <th>Next servie due in</th>
+                <th>Next service due in</th>
                 <th>Pickup/Drop</th>
                 <th>Pickup/Drop Slot</th>
                 <th>digipin</th>
@@ -75,6 +133,7 @@
                 <input type="checkbox" class="mark-completed-checkbox" data-booking-id="{{ booking['id'] }}"
        {% if booking['marked_as_completed']|int == 1 %}checked{% endif %}> 
                 </td>
+
             </tr>
             {% endfor %}
         </table>

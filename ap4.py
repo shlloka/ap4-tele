@@ -85,6 +85,64 @@ def index():
 
 
 
+# @app.route("/bookings", methods=["GET", "POST"])
+# def bookings():
+#     if request.method == "POST":
+#         # Get all form fields
+#         customer_name = request.form.get("customer_name")
+#         email = request.form.get("email")
+#         vehicle_model = request.form.get("vehicle_model")
+#         license_plate = request.form.get("license_plate")
+#         last_service_date = request.form.get("last_service_date")
+#         service_type = request.form.get("service_type")
+#         warranty_status = request.form.get("warranty_status")
+#         pickup_drop = request.form.get("pickup_drop")
+#         slot = request.form.get("slot")
+#         digipin = request.form.get("digipin")
+#         marked_as_completed = int(request.form.get("marked_as_completed", "0"))
+
+#         # Calculate next_service_due_in_X_days
+#         next_service_due = calculate_next_service_due_in_days(last_service_date, service_type)
+
+#         data = (
+#             customer_name,
+#             email,
+#             vehicle_model,
+#             license_plate,
+#             last_service_date,
+#             service_type,
+#             warranty_status,
+#             pickup_drop,
+#             slot,
+#             next_service_due,
+#             digipin,
+#             marked_as_completed,
+#         )
+
+#         # Insert into DB
+#         conn = sqlite3.connect(DB_PATH)
+#         conn.execute(
+#             """
+#             INSERT INTO bookings
+#             (customer_name, email, vehicle_model, license_plate, last_service_date, service_type, warranty_status,
+#              pickup_drop, slot, next_service_due_in_X_days, digipin, marked_as_completed)
+#             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+#             """,
+#             data,
+#         )
+#         conn.commit()
+#         conn.close()
+#         return redirect(url_for("bookings"))
+
+#     # GET: Show all bookings ordered by created_at desc
+#     conn = sqlite3.connect(DB_PATH)
+#     conn.row_factory = sqlite3.Row
+#     cur = conn.execute("SELECT * FROM bookings ORDER BY created_at DESC")
+#     bookings_list = cur.fetchall()
+#     conn.close()
+
+#     return render_template("bookings.html", bookings=bookings_list)
+
 @app.route("/bookings", methods=["GET", "POST"])
 def bookings():
     if request.method == "POST":
@@ -119,29 +177,56 @@ def bookings():
             marked_as_completed,
         )
 
-        # Insert into DB
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute(
-            """
-            INSERT INTO bookings
-            (customer_name, email, vehicle_model, license_plate, last_service_date, service_type, warranty_status,
-             pickup_drop, slot, next_service_due_in_X_days, digipin, marked_as_completed)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            data,
-        )
-        conn.commit()
-        conn.close()
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.execute(
+                """
+                INSERT INTO bookings
+                (customer_name, email, vehicle_model, license_plate, last_service_date, service_type, warranty_status,
+                 pickup_drop, slot, next_service_due_in_X_days, digipin, marked_as_completed)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                data,
+            )
         return redirect(url_for("bookings"))
 
-    # GET: Show all bookings ordered by created_at desc
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cur = conn.execute("SELECT * FROM bookings ORDER BY created_at DESC")
-    bookings_list = cur.fetchall()
-    conn.close()
+    # GET: Show filtered bookings ordered by created_at desc
+    service_type_filter = request.args.get("service_type", "").strip()
+    next_due_filter = request.args.get("next_due", "").strip()
+    marked_completed_filter = request.args.get("marked_completed", "").strip()
 
-    return render_template("bookings.html", bookings=bookings_list)
+    query = "SELECT * FROM bookings WHERE 1=1"
+    params = []
+
+    if service_type_filter:
+        query += " AND service_type = ?"
+        params.append(service_type_filter)
+
+    if next_due_filter:
+        if next_due_filter == "due":
+            query += " AND CAST(next_service_due_in_X_days AS INTEGER) <= 0"
+        elif next_due_filter == "not_due":
+            query += " AND CAST(next_service_due_in_X_days AS INTEGER) > 0"
+
+    if marked_completed_filter in ("0", "1"):
+        query += " AND marked_as_completed = ?"
+        params.append(int(marked_completed_filter))
+
+    query += " ORDER BY created_at DESC"
+
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.execute(query, params)
+        bookings_list = cur.fetchall()
+
+    print("Filters received:", service_type_filter, next_due_filter, marked_completed_filter)    
+    return render_template(
+        "bookings.html",
+        bookings=bookings_list,
+        service_type_filter=service_type_filter,
+        next_due_filter=next_due_filter,
+        marked_completed_filter=marked_completed_filter,
+    )
+    
 
 
 @app.route("/getdigipin")
@@ -156,7 +241,7 @@ def getdigipin():
             return jsonify({"error": str(e)}), 500
     else:
         return jsonify({"error": "Missing latitude or longitude"}), 400
-        
+
 @app.route("/update_completion/<int:booking_id>", methods=["POST"])
 def update_completion(booking_id):
     marked = request.form.get("marked_as_completed", "0")

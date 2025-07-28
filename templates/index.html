@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DigiPIN Web App - Get Location</title>
+    <title>DigiPIN Web App - Home</title>
     <style>
-        /* Simple styles for nav */
         nav {
             background-color: #f0f0f0;
             padding: 10px;
@@ -16,8 +15,26 @@
             color: #333;
         }
         nav a.active {
-            color: #007bff; /* active tab color */
+            color: #007bff;
         }
+        form {
+            margin: 30px 0;
+            background: #f9f9f9;
+            padding: 18px;
+            border-radius: 5px;
+            max-width: 550px;
+        }
+        label {
+            display: block;
+            margin: 12px 0 5px;
+        }
+        input, select {
+            width: 100%;
+            max-width: 400px;
+            padding: 6px;
+        }
+        #fetchBtn { margin-top: 10px;}
+        .readonly { background: #f3f3f3; }
     </style>
 </head>
 <body>
@@ -25,69 +42,89 @@
         <a href="/" class="active">Home</a>
         <a href="/bookings">Bookings</a>
     </nav>
-    <h1>Get DigiPIN from Your Current Location</h1>
-
-    <button id="getLocationBtn">Get My Location & DigiPIN</button>
-
-    <div id="result" style="margin-top:20px;"></div>
-
-    <!-- Display fetched latitude, longitude, and DigiPIN if available -->
-    {% if digipin and latitude is defined and longitude is defined %}
-        <div style="margin-top:20px;">
-            <h3>Location and DigiPIN details:</h3>
-            <p><strong>DigiPIN:</strong> {{ digipin }}</p>
+    <h1>Service Telecalling Application</h1>
+    <hr>
+    <h2>Manual Customer Service Booking</h2>
+    <!-- Service Booking Form -->
+    <form method="post" action="/bookings">
+        <label for="customer_name">Customer Name:</label>
+        <input type="text" id="customer_name" name="customer_name" required>
+    
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+    
+        <label for="vehicle_model">Vehicle Model:</label>
+        <input type="text" id="vehicle_model" name="vehicle_model" required>
+    
+        <label for="last_service_date">Last Service Date:</label>
+        <input type="date" id="last_service_date" name="last_service_date">
+    
+        <label for="service_type">Service Type:</label>
+        <select id="service_type" name="service_type" required>
+            <option value="Free">Free (first 6 months)</option>
+            <option value="Paid">Paid (after 6 months/7000km)</option>
+            <option value="Running Repairs">Running Repairs</option>
+        </select>
+    
+        <label for="pickup_drop">Pickup/Drop Option:</label>
+        <select id="pickup_drop" name="pickup_drop" required>
+            <option value="">--Select--</option>
+            <option value="Pickup">Pickup</option>
+            <option value="Drop">Drop</option>
+            <option value="None">None</option>
+        </select>
+    
+        <label for="slot">Pickup/Drop Date and Time:</label>
+        <input type="datetime-local" id="slot" name="slot">
+    
+        <!-- DigiPIN section -->
+        <label for="digipin">DigiPIN:</label>
+        <div style="display: flex; gap:8px;">
+            <input type="text" id="digipin" name="digipin" class="readonly" readonly required>
+            <button type="button" id="fetchBtn">Fetch DigiPIN</button>
         </div>
-    {% endif %}
-
+        <div id="digipin_status" style="color:#007bff; font-size: 95%"></div>
+    
+        <!-- Optional: marked_as_completed value hidden, default 0 for new bookings -->
+        <input type="hidden" name="marked_as_completed" value="0" />
+    
+        <button type="submit" style="margin-top:20px;">Book Service</button>
+    </form>
+    
     <script>
-        const btn = document.getElementById('getLocationBtn');
-        const resultDiv = document.getElementById('result');
-
-        btn.onclick = function() {
+        document.getElementById('fetchBtn').onclick = function() {
+            var digipinField = document.getElementById('digipin');
+            var statusDiv = document.getElementById('digipin_status');
             if (navigator.geolocation) {
-                resultDiv.textContent = "Requesting location permission...";
+                statusDiv.textContent = "Requesting location permission...";
                 navigator.geolocation.getCurrentPosition(success, error);
             } else {
-                resultDiv.innerHTML = "Sorry, your browser does not support geolocation.";
+                statusDiv.innerHTML = "Sorry, your browser does not support geolocation.";
+            }
+            function success(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                statusDiv.textContent = "Fetching DigiPIN for your current location...";
+                // Call your Flask backend to get DigiPIN (AJAX/fetch)
+                fetch(`/getdigipin?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}`)
+                .then(resp => resp.json())
+                .then(data => {
+                    if(data.digipin){
+                        digipinField.value = data.digipin;
+                        statusDiv.textContent = "DigiPIN received!";
+                    } else {
+                        digipinField.value = "";
+                        statusDiv.textContent = "Could not retrieve DigiPIN!";
+                    }
+                }).catch(() => {
+                    digipinField.value = "";
+                    statusDiv.textContent = "Error contacting server.";
+                });
+            }
+            function error(e) {
+                statusDiv.textContent = "Could not get location (permission denied, unavailable, or timed out).";
             }
         };
-
-        function success(position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            resultDiv.innerHTML = `Coordinates detected: <b>${lat.toFixed(6)}</b>, <b>${lon.toFixed(6)}</b><br>Fetching DigiPIN...`;
-
-            fetch('/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}`
-            })
-            .then(response => response.text())
-            .then(html => {
-                document.documentElement.innerHTML = html;
-            })
-            .catch(() => {
-                resultDiv.innerHTML = "Error contacting server.";
-            });
-        }
-
-        function error(err) {
-            switch(err.code) {
-                case err.PERMISSION_DENIED:
-                    resultDiv.innerHTML = "Permission denied. Cannot access location.";
-                    break;
-                case err.POSITION_UNAVAILABLE:
-                    resultDiv.innerHTML = "Position unavailable.";
-                    break;
-                case err.TIMEOUT:
-                    resultDiv.innerHTML = "Location request timed out.";
-                    break;
-                default:
-                    resultDiv.innerHTML = "An unknown error occurred.";
-            }
-        }
     </script>
 </body>
 </html>

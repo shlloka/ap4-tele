@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DigiPIN Bookings</title>
+    <title>Service Bookings</title>
     <style>
         nav {
             background-color: #f0f0f0;
@@ -10,12 +10,28 @@
         }
         nav a {
             margin-right: 15px;
-            text-decoration: none;
             font-weight: bold;
             color: #333;
+            text-decoration: none;
         }
         nav a.active {
             color: #007bff;
+        }
+        table {
+            width: 98%;
+            border-collapse: collapse;
+            margin: 18px 1%;
+        }
+        th, td {
+            padding: 8px 5px;
+            border: 1px solid #cccccc;
+            text-align: left;
+        }
+        th {
+            background: #f0f8ff;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
         }
     </style>
 </head>
@@ -25,9 +41,45 @@
         <a href="/">Home</a>
         <a href="/bookings" class="active">Bookings</a>
     </nav>
-
-    <h1>Bookings Page</h1>
-    <p>This is your Bookings page. You can add your booking features here.</p>
-
+    <h1>All Bookings</h1>
+    {% if bookings %}
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Customer Name</th>
+                <th>email </th>
+                <th>Vehicle Model</th>
+                <th>Last Service Date</th>
+                <th>Service Type</th>
+                <th>Next servie due in</th>
+                <th>Pickup/Drop</th>
+                <th>Pickup/Drop Slot</th>
+                <th>digipin</th>
+                <th>Created At</th>
+                <th>completed?</th>
+            </tr>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking["id"] }}</td>
+                <td>{{ booking["customer_name"] }}</td>
+                <td>{{ booking["email"] }}</td>
+                <td>{{ booking["vehicle_model"] }}</td>
+                <td>{{ booking["last_service_date"] }}</td>
+                <td>{{ booking["service_type"] }}</td>
+                <td>{{ booking["next_service_due_in_X_days"] }}</td>
+                <td>{{ booking["pickup_drop"] }}</td>
+                <td>{{ booking["slot"] }}</td>
+                <td>{{ booking["digipin"] }}</td>
+                <td>{{ booking["created_at"] }}</td>
+                <td>
+                <input type="checkbox" class="mark-completed-checkbox" data-booking-id="{{ booking['id'] }}"
+       {% if booking['marked_as_completed']|int == 1 %}checked{% endif %}> 
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No bookings found.</p>
+    {% endif %}
 </body>
 </html>

@@ -3,35 +3,250 @@
 <head>
     <title>Service Bookings</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
         nav {
-            background-color: #f0f0f0;
-            padding: 10px;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
         nav a {
-            margin-right: 15px;
-            font-weight: bold;
-            color: #333;
+            margin-right: 25px;
+            font-weight: 600;
+            color: #ffffff;
             text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
         }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+
         nav a.active {
-            color: #007bff;
+            background: rgba(255,255,255,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+
+        .filter-container {
+            background: rgba(255,255,255,0.9);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 1200px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .filter-group select {
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            color: #4a5568;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(167, 139, 250, 0.3);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(167, 139, 250, 0.4);
+        }
+
+        .table-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 1400px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
         table {
-            width: 98%;
+            width: 100%;
             border-collapse: collapse;
-            margin: 18px 1%;
         }
-        th, td {
-            padding: 8px 5px;
-            border: 1px solid #cccccc;
-            text-align: left;
-        }
+
         th {
-            background: #f0f8ff;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4c51bf;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #a5b4fc;
         }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9em;
+            vertical-align: middle;
+        }
+
         tr:nth-child(even) {
-            background: #f9f9f9;
+            background: rgba(248, 250, 252, 0.5);
+        }
+
+        tr:hover {
+            background: rgba(167, 139, 250, 0.05);
+            transform: scale(1.001);
+            transition: all 0.2s ease;
+        }
+
+        /* Priority color coding for next service due column */
+        .priority-overdue {
+            background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%) !important;
+            color: #7f1d1d;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .priority-due-soon {
+            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%) !important;
+            color: #9a3412;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .priority-due-later {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%) !important;
+            color: #1e40af;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .priority-not-due {
+            background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%) !important;
+            color: #14532d;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .checkbox-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mark-completed-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #a78bfa;
+            cursor: pointer;
+        }
+
+        .no-bookings {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+            font-size: 1.1em;
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                min-width: auto;
+            }
+            
+            table {
+                font-size: 0.8em;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+            }
+            
+            nav {
+                padding: 10px 15px;
+            }
+            
+            nav a {
+                margin-right: 15px;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
@@ -65,56 +280,81 @@
                     });
                 });
             });
+
+            // Add priority classes to next service due cells
+            const nextServiceCells = document.querySelectorAll('.next-service-cell');
+            nextServiceCells.forEach(cell => {
+                const days = parseInt(cell.textContent);
+                if (days <= 0) {
+                    cell.classList.add('priority-overdue');
+                } else if (days <= 7) {
+                    cell.classList.add('priority-due-soon');
+                } else if (days <= 30) {
+                    cell.classList.add('priority-due-later');
+                } else {
+                    cell.classList.add('priority-not-due');
+                }
+            });
         });
-        </script>
-        
+    </script>
 
     <nav>
         <a href="/">Home</a>
         <a href="/bookings" class="active">Bookings</a>
     </nav>
+    
     <h1>All Bookings</h1>
+    
     {% if bookings %}
-    <form method="get" action="{{ url_for('bookings') }}" id="filterForm">
-        <label for="service_type">Service Type:</label>
-        <select name="service_type" id="service_type">
-            <option value="">-- All --</option>
-            <option value="Free" {% if service_type_filter == 'Free' %}selected{% endif %}>Free</option>
-            <option value="Paid" {% if service_type_filter == 'aria-placeholder=""' %}selected{% endif %}>Paid</option>
-            <option value="Running Repairs" {% if service_type_filter == 'Running Repairs' %}selected{% endif %}>Running Repairs</option>
-        </select>
+    <div class="filter-container">
+        <form method="get" action="{{ url_for('bookings') }}" id="filterForm" class="filter-form">
+            <div class="filter-group">
+                <label for="service_type">Service Type:</label>
+                <select name="service_type" id="service_type">
+                    <option value="">-- All --</option>
+                    <option value="Free" {% if service_type_filter == 'Free' %}selected{% endif %}>Free</option>
+                    <option value="Paid" {% if service_type_filter == 'Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Running Repairs" {% if service_type_filter == 'Running Repairs' %}selected{% endif %}>Running Repairs</option>
+                </select>
+            </div>
+          
+            <div class="filter-group">
+                <label for="next_due">Next Service Due:</label>
+                <select name="next_due" id="next_due">
+                    <option value="">-- All --</option>
+                    <option value="due" {% if next_due_filter == 'due' %}selected{% endif %}>Due (0 or fewer days)</option>
+                    <option value="not_due" {% if next_due_filter == 'not_due' %}selected{% endif %}>Not Due (&gt; 0 days)</option>
+                </select>
+            </div>
+          
+            <div class="filter-group">
+                <label for="marked_completed">Completed:</label>
+                <select name="marked_completed" id="marked_completed">
+                    <option value="">-- All --</option>
+                    <option value="0" {% if marked_completed_filter == '0' %}selected{% endif %}>Not Completed</option>
+                    <option value="1" {% if marked_completed_filter == '1' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+          
+            <button type="submit" class="filter-btn">Filter</button>
+        </form>
+    </div>
       
-        <label for="next_due">Next Service Due:</label>
-        <select name="next_due" id="next_due">
-            <option value="">-- All --</option>
-            <option value="due" {% if next_due_filter == 'due' %}selected{% endif %}>Due (0 or fewer days)</option>
-            <option value="not_due" {% if next_due_filter == 'not_due' %}selected{% endif %}>Not Due (&gt; 0 days)</option>
-        </select>
-      
-        <label for="marked_completed">Completed:</label>
-        <select name="marked_completed" id="marked_completed">
-            <option value="">-- All --</option>
-            <option value="0" {% if marked_completed_filter == '0' %}selected{% endif %}>Not Completed</option>
-            <option value="1" {% if marked_completed_filter == '1' %}selected{% endif %}>Completed</option>
-        </select>
-      
-        <button type="submit">Filter</button>
-      </form>
-      
+    <div class="table-container">
         <table>
             <tr>
                 <th>ID</th>
                 <th>Customer Name</th>
-                <th>email </th>
+                <th>Email</th>
                 <th>Vehicle Model</th>
                 <th>Last Service Date</th>
                 <th>Service Type</th>
-                <th>Next service due in</th>
+                <th>Next Service Due In</th>
                 <th>Pickup/Drop</th>
                 <th>Pickup/Drop Slot</th>
-                <th>digipin</th>
+                <th>DigiPIN</th>
                 <th>Created At</th>
-                <th>completed?</th>
+                <th>Completed?</th>
             </tr>
             {% for booking in bookings %}
             <tr>
@@ -124,21 +364,23 @@
                 <td>{{ booking["vehicle_model"] }}</td>
                 <td>{{ booking["last_service_date"] }}</td>
                 <td>{{ booking["service_type"] }}</td>
-                <td>{{ booking["next_service_due_in_X_days"] }}</td>
+                <td class="next-service-cell">{{ booking["next_service_due_in_X_days"] }}</td>
                 <td>{{ booking["pickup_drop"] }}</td>
                 <td>{{ booking["slot"] }}</td>
                 <td>{{ booking["digipin"] }}</td>
                 <td>{{ booking["created_at"] }}</td>
-                <td>
-                <input type="checkbox" class="mark-completed-checkbox" data-booking-id="{{ booking['id'] }}"
-       {% if booking['marked_as_completed']|int == 1 %}checked{% endif %}> 
+                <td class="checkbox-container">
+                    <input type="checkbox" class="mark-completed-checkbox" data-booking-id="{{ booking['id'] }}"
+                           {% if booking['marked_as_completed']|int == 1 %}checked{% endif %}> 
                 </td>
-
             </tr>
             {% endfor %}
         </table>
+    </div>
     {% else %}
-        <p>No bookings found.</p>
+        <div class="no-bookings">
+            <p>No bookings found.</p>
+        </div>
     {% endif %}
 </body>
 </html>

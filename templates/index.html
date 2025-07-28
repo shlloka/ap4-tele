@@ -3,38 +3,211 @@
 <head>
     <title>DigiPIN Web App - Home</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
         nav {
-            background-color: #f0f0f0;
-            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav a {
+            margin-right: 25px;
+            font-weight: 600;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+
+        nav a.active {
+            background: rgba(255,255,255,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        h2 {
+            color: #5a67d8;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            font-weight: 500;
+        }
+
+        hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            margin: 30px 0;
+            border-radius: 2px;
+        }
+
+        .form-container {
+            background: rgba(255,255,255,0.95);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
             margin-bottom: 20px;
         }
-        nav a {
-            margin-right: 15px;
-            text-decoration: none;
-            font-weight: bold;
-            color: #333;
-        }
-        nav a.active {
-            color: #007bff;
-        }
-        form {
-            margin: 30px 0;
-            background: #f9f9f9;
-            padding: 18px;
-            border-radius: 5px;
-            max-width: 550px;
-        }
+
         label {
             display: block;
-            margin: 12px 0 5px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 0.95em;
         }
+
         input, select {
             width: 100%;
-            max-width: 400px;
-            padding: 6px;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+            color: #4a5568;
         }
-        #fetchBtn { margin-top: 10px;}
-        .readonly { background: #f3f3f3; }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .readonly {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #64748b;
+        }
+
+        .digipin-container {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .digipin-input {
+            flex: 1;
+        }
+
+        #fetchBtn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
+            white-space: nowrap;
+        }
+
+        #fetchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+        }
+
+        #digipin_status {
+            color: #5a67d8;
+            font-size: 0.9em;
+            margin-top: 8px;
+            font-weight: 500;
+            min-height: 20px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(167, 139, 250, 0.3);
+            margin-top: 25px;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(167, 139, 250, 0.4);
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .form-container {
+                padding: 25px 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .digipin-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            #fetchBtn {
+                width: 100%;
+            }
+            
+            nav {
+                padding: 10px 15px;
+            }
+            
+            nav a {
+                margin-right: 15px;
+                padding: 6px 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -42,54 +215,76 @@
         <a href="/" class="active">Home</a>
         <a href="/bookings">Bookings</a>
     </nav>
-    <h1>Service Telecalling Application</h1>
-    <hr>
-    <h2>Manual Customer Service Booking</h2>
-    <!-- Service Booking Form -->
-    <form method="post" action="/bookings">
-        <label for="customer_name">Customer Name:</label>
-        <input type="text" id="customer_name" name="customer_name" required>
     
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-    
-        <label for="vehicle_model">Vehicle Model:</label>
-        <input type="text" id="vehicle_model" name="vehicle_model" required>
-    
-        <label for="last_service_date">Last Service Date:</label>
-        <input type="date" id="last_service_date" name="last_service_date">
-    
-        <label for="service_type">Service Type:</label>
-        <select id="service_type" name="service_type" required>
-            <option value="Free">Free (first 6 months)</option>
-            <option value="Paid">Paid (after 6 months/7000km)</option>
-            <option value="Running Repairs">Running Repairs</option>
-        </select>
-    
-        <label for="pickup_drop">Pickup/Drop Option:</label>
-        <select id="pickup_drop" name="pickup_drop" required>
-            <option value="">--Select--</option>
-            <option value="Pickup">Pickup</option>
-            <option value="Drop">Drop</option>
-            <option value="None">None</option>
-        </select>
-    
-        <label for="slot">Pickup/Drop Date and Time:</label>
-        <input type="datetime-local" id="slot" name="slot">
-    
-        <!-- DigiPIN section -->
-        <label for="digipin">DigiPIN:</label>
-        <div style="display: flex; gap:8px;">
-            <input type="text" id="digipin" name="digipin" class="readonly" readonly required>
-            <button type="button" id="fetchBtn">Fetch DigiPIN</button>
+    <div class="container">
+        <h1>Service Telecalling Application</h1>
+        <hr>
+        <h2>Manual Customer Service Booking</h2>
+        
+        <div class="form-container">
+            <form method="post" action="/bookings">
+                <div class="form-group">
+                    <label for="customer_name">Customer Name <span class="required">*</span>:</label>
+                    <input type="text" id="customer_name" name="customer_name" required>
+                </div>
+            
+                <div class="form-group">
+                    <label for="email">Email <span class="required">*</span>:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+            
+                <div class="form-group">
+                    <label for="vehicle_model">Vehicle Model <span class="required">*</span>:</label>
+                    <input type="text" id="vehicle_model" name="vehicle_model" required>
+                </div>
+            
+                <div class="form-group">
+                    <label for="last_service_date">Last Service Date:</label>
+                    <input type="date" id="last_service_date" name="last_service_date">
+                </div>
+            
+                <div class="form-group">
+                    <label for="service_type">Service Type <span class="required">*</span>:</label>
+                    <select id="service_type" name="service_type" required>
+                        <option value="">-- Select Service Type --</option>
+                        <option value="Free">Free (first 6 months)</option>
+                        <option value="Paid">Paid (after 6 months/7000km)</option>
+                        <option value="Running Repairs">Running Repairs</option>
+                    </select>
+                </div>
+            
+                <div class="form-group">
+                    <label for="pickup_drop">Pickup/Drop Option <span class="required">*</span>:</label>
+                    <select id="pickup_drop" name="pickup_drop" required>
+                        <option value="">-- Select Option --</option>
+                        <option value="Pickup">Pickup</option>
+                        <option value="Drop">Drop</option>
+                        <option value="None">None</option>
+                    </select>
+                </div>
+            
+                <div class="form-group">
+                    <label for="slot">Pickup/Drop Date and Time:</label>
+                    <input type="datetime-local" id="slot" name="slot">
+                </div>
+            
+                <div class="form-group">
+                    <label for="digipin">DigiPIN <span class="required">*</span>:</label>
+                    <div class="digipin-container">
+                        <div class="digipin-input">
+                            <input type="text" id="digipin" name="digipin" class="readonly" readonly required>
+                        </div>
+                        <button type="button" id="fetchBtn">Fetch DigiPIN</button>
+                    </div>
+                    <div id="digipin_status"></div>
+                </div>
+            
+                <input type="hidden" name="marked_as_completed" value="0" />
+            
+                <button type="submit" class="submit-btn">Book Service</button>
+            </form>
         </div>
-        <div id="digipin_status" style="color:#007bff; font-size: 95%"></div>
-    
-        <!-- Optional: marked_as_completed value hidden, default 0 for new bookings -->
-        <input type="hidden" name="marked_as_completed" value="0" />
-    
-        <button type="submit" style="margin-top:20px;">Book Service</button>
-    </form>
+    </div>
     
     <script>
         document.getElementById('fetchBtn').onclick = function() {

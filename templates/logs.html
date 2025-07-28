@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DigiPIN Web App - Maintenance Log</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav a {
+            margin-right: 25px;
+            font-weight: 600;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+
+        nav a.active {
+            background: rgba(255,255,255,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-in-progress { color: #3b82f6; }
+        .stat-completed { color: #10b981; }
+        .stat-pending { color: #f59e0b; }
+        .stat-total { color: #8b5cf6; }
+
+        .vehicles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .vehicle-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #a78bfa;
+        }
+
+        .vehicle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .vehicle-number {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #4a5568;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-in-progress {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            color: #1e40af;
+        }
+
+        .status-completed {
+            background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
+            color: #14532d;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+            color: #9a3412;
+        }
+
+        .vehicle-info {
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #4a5568;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(255,255,255,0.98);
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: calc(90vh - 100px);
+            overflow-y: auto;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .detail-section {
+            background: rgba(248, 250, 252, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .service-logs {
+            grid-column: 1 / -1;
+        }
+
+        .log-entry {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #a78bfa;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .log-title {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .log-time {
+            font-size: 0.8em;
+            color: #64748b;
+        }
+
+        .log-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .log-completed {
+            background: #bbf7d0;
+            color: #14532d;
+        }
+
+        .log-in-progress {
+            background: #bfdbfe;
+            color: #1e40af;
+        }
+
+        .log-pending {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 10px;
+            font-size: 0.8em;
+        }
+
+        .real-time-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            border-radius: 20px;
+            font-size: 0.8em;
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .vehicles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            nav {
+                padding: 10px 15px;
+            }
+
+            nav a {
+                margin-right: 15px;
+                padding: 6px 12px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/bookings">Bookings</a>
+        <a href="/weekly_calendar">Calendar</a>
+        <a href="/maintenance_log" class="active">logs</a>
+    </nav>
+
+    <div class="container">
+        <h1>Maintenance Log</h1>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number stat-in-progress">8</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-completed">12</div>
+                <div class="stat-label">Completed Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-pending">5</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number stat-total">25</div>
+                <div class="stat-label">Total Vehicles</div>
+            </div>
+        </div>
+
+        <div class="vehicles-grid">
+            <div class="vehicle-card" onclick="openVehicleModal('KA01AB1234')">
+                <div class="vehicle-header">
+                    <div class="vehicle-number">KA01AB1234</div>
+                    <div class="status-badge status-in-progress">In Progress</div>
+                </div>
+                <div class="vehicle-info">
+                    <div class="info-row">
+                        <span class="info-label">Customer:</span>
+                        <span class="info-value">Anna S.</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Model:</span>
+                        <span class="info-value">Nexon EV</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Service Type:</span>
+                        <span class="info-value">Paid Service</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Started:</span>
+                        <span class="info-value">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Progress</span>
+                        <span>65%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vehicle-card" onclick="openVehicleModal('KA02CD5678')">
+                <div class="vehicle-header">
+                    <div class="vehicle-number">KA02CD5678</div>
+                    <div class="status-badge status-pending">Pending</div>
+                </div>
+                <div class="vehicle-info">
+                    <div class="info-row">
+                        <span class="info-label">Customer:</span>
+                        <span class="info-value">Tisha R.</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Model:</span>
+                        <span class="info-value">Curvv EV</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Service Type:</span>
+                        <span class="info-value">Free Service</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Waiting:</span>
+                        <span class="info-value">30 minutes</span>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Progress</span>
+                        <span>0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vehicle-card" onclick="openVehicleModal('KA03EF9012')">
+                <div class="vehicle-header">
+                    <div class="vehicle-number">KA03EF9012</div>
+                    <div class="status-badge status-in-progress">In Progress</div>
+                </div>
+                <div class="vehicle-info">
+                    <div class="info-row">
+                        <span class="info-label">Customer:</span>
+                        <span class="info-value">Shreya B.</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Model:</span>
+                        <span class="info-value">Tiago EV</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Service Type:</span>
+                        <span class="info-value">Running Repairs</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Started:</span>
+                        <span class="info-value">45 minutes ago</span>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Progress</span>
+                        <span>30%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 30%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vehicle-card" onclick="openVehicleModal('KA04GH3456')">
+                <div class="vehicle-header">
+                    <div class="vehicle-number">KA04GH3456</div>
+                    <div class="status-badge status-completed">Completed</div>
+                </div>
+                <div class="vehicle-info">
+                    <div class="info-row">
+                        <span class="info-label">Customer:</span>
+                        <span class="info-value">Amit A.</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Model:</span>
+                        <span class="info-value">Curvv</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Service Type:</span>
+                        <span class="info-value">Paid Service</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Completed:</span>
+                        <span class="info-value">1 hour ago</span>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Progress</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span id="modalVehicleNumber">KA01AB1234</span>
+                    <div class="real-time-indicator">
+                        <div class="pulse-dot"></div>
+                        Live Tracking
+                    </div>
+                </div>
+                <span class="close" onclick="closeVehicleModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid">
+                    <div class="detail-section">
+                        <div class="section-title">Customer Information</div>
+                        <div class="info-row">
+                            <span class="info-label">Name:</span>
+                            <span class="info-value">John Doe</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">john.doe@email.com</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone:</span>
+                            <span class="info-value">+91 9876543210</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">DigiPIN:</span>
+                            <span class="info-value">ABC123XYZ</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="section-title">Vehicle Information</div>
+                        <div class="info-row">
+                            <span class="info-label">Model:</span>
+                            <span class="info-value">Nexon EV 2022</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">License Plate:</span>
+                            <span class="info-value">MH01 NK 1234</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Service Type:</span>
+                            <span class="info-value">Paid Service</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Last Service:</span>
+                            <span class="info-value">2024-01-15</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Overall Progress</span>
+                                <span>65%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section service-logs">
+                        <div class="section-title">Service Logs & Real-time Tracking</div>
+                        
+                        <div class="log-entry">
+                            <div class="log-header">
+                                <div class="log-title">Engine Oil Change</div>
+                                <div class="log-status log-completed">Completed</div>
+                            </div>
+                            <div class="log-time">Completed at 10:30 AM</div>
+                            <p>Engine oil and filter replaced. Used 5W-30 synthetic oil. Old oil disposed properly.</p>
+                        </div>
+
+                        <div class="log-entry">
+                            <div class="log-header">
+                                <div class="log-title">Brake Inspection</div>
+                                <div class="log-status log-in-progress">In Progress</div>
+                            </div>
+                            <div class="log-time">Started at 11:15 AM</div>
+                            <p>Currently checking brake pads and disc condition. Front brake pads need replacement.</p>
+                        </div>
+
+                        <div class="log-entry">
+                            <div class="log-header">
+                                <div class="log-title">Air Filter Replacement</div>
+                                <div class="log-status log-pending">Pending</div>
+                            </div>
+                            <div class="log-time">Scheduled for 12:00 PM</div>
+                            <p>Air filter inspection and replacement if necessary. Cabin filter also to be checked.</p>
+                        </div>
+
+                        <div class="log-entry">
+                            <div class="log-header">
+                                <div class="log-title">Battery Check</div>
+                                <div class="log-status log-pending">Pending</div>
+                            </div>
+                            <div class="log-time">Scheduled for 12:30 PM</div>
+                            <p>Battery voltage and charging system check. Clean terminals if required.</p>
+                        </div>
+
+                        <div class="log-entry">
+                            <div class="log-header">
+                                <div class="log-title">Final Quality Check</div>
+                                <div class="log-status log-pending">Pending</div>
+                            </div>
+                            <div class="log-time">Scheduled for 1:00 PM</div>
+                            <p>Complete vehicle inspection and test drive before delivery.</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="section-title">Service Photos</div>
+                        <div class="photo-gallery">
+                            <div class="photo-item">
+                                <img src="/placeholder.svg?height=150&width=150" alt="Before Oil Change">
+                                <div class="photo-overlay">Before - Oil Change</div>
+                            </div>
+                            <div class="photo-item">
+                                <img src="/placeholder.svg?height=150&width=150" alt="After Oil Change">
+                                <div class="photo-overlay">After - Oil Change</div>
+                            </div>
+                            <div class="photo-item">
+                                <img src="/placeholder.svg?height=150&width=150" alt="Brake Inspection">
+                                <div class="photo-overlay">Brake Inspection</div>
+                            </div>
+                            <div class="photo-item">
+                                <img src="/placeholder.svg?height=150&width=150" alt="Air Filter">
+                                <div class="photo-overlay">Air Filter Check</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openVehicleModal(vehicleNumber) {
+            document.getElementById('modalVehicleNumber').textContent = vehicleNumber;
+            document.getElementById('vehicleModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Simulate real-time updates
+            startRealTimeSimulation();
+        }
+
+        function closeVehicleModal() {
+            document.getElementById('vehicleModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Stop real-time simulation
+            if (window.simulationInterval) {
+                clearInterval(window.simulationInterval);
+            }
+        }
+
+        function startRealTimeSimulation() {
+            // Simulate progress updates every 10 seconds
+            window.simulationInterval = setInterval(() => {
+                const progressElements = document.querySelectorAll('.progress-fill');
+                progressElements.forEach(element => {
+                    const currentWidth = parseInt(element.style.width) || 0;
+                    if (currentWidth < 100) {
+                        const newWidth = Math.min(currentWidth + Math.random() * 5, 100);
+                        element.style.width = newWidth + '%';
+                        
+                        // Update progress label
+                        const label = element.parentElement.previousElementSibling.querySelector('span:last-child');
+                        if (label) {
+                            label.textContent = Math.round(newWidth) + '%';
+                        }
+                    }
+                });
+                
+                // Simulate log status changes
+                const inProgressLogs = document.querySelectorAll('.log-in-progress');
+                if (inProgressLogs.length > 0 && Math.random() > 0.7) {
+                    const randomLog = inProgressLogs[Math.floor(Math.random() * inProgressLogs.length)];
+                    randomLog.textContent = 'Completed';
+                    randomLog.className = 'log-status log-completed';
+                    
+                    // Update time
+                    const timeElement = randomLog.parentElement.parentElement.querySelector('.log-time');
+                    timeElement.textContent = 'Completed at ' + new Date().toLocaleTimeString();
+                }
+            }, 10000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('vehicleModal');
+            if (event.target === modal) {
+                closeVehicleModal();
+            }
+        }
+
+        // Simulate real-time updates for main page
+        setInterval(() => {
+            const progressBars = document.querySelectorAll('.vehicles-grid .progress-fill');
+            progressBars.forEach(bar => {
+                const currentWidth = parseInt(bar.style.width) || 0;
+                if (currentWidth < 100 && Math.random() > 0.8) {
+                    const newWidth = Math.min(currentWidth + Math.random() * 3, 100);
+                    bar.style.width = newWidth + '%';
+                    
+                    // Update progress label
+                    const label = bar.parentElement.previousElementSibling.querySelector('span:last-child');
+                    if (label) {
+                        label.textContent = Math.round(newWidth) + '%';
+                    }
+                }
+            });
+        }, 15000);
+    </script>
+</body>
+</html>

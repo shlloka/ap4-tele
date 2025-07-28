@@ -83,66 +83,6 @@ def index():
             error = f"API error: {e}"
     return render_template("index.html", digipin=digipin, error=error, latitude=latitude, longitude=longitude)
 
-
-
-# @app.route("/bookings", methods=["GET", "POST"])
-# def bookings():
-#     if request.method == "POST":
-#         # Get all form fields
-#         customer_name = request.form.get("customer_name")
-#         email = request.form.get("email")
-#         vehicle_model = request.form.get("vehicle_model")
-#         license_plate = request.form.get("license_plate")
-#         last_service_date = request.form.get("last_service_date")
-#         service_type = request.form.get("service_type")
-#         warranty_status = request.form.get("warranty_status")
-#         pickup_drop = request.form.get("pickup_drop")
-#         slot = request.form.get("slot")
-#         digipin = request.form.get("digipin")
-#         marked_as_completed = int(request.form.get("marked_as_completed", "0"))
-
-#         # Calculate next_service_due_in_X_days
-#         next_service_due = calculate_next_service_due_in_days(last_service_date, service_type)
-
-#         data = (
-#             customer_name,
-#             email,
-#             vehicle_model,
-#             license_plate,
-#             last_service_date,
-#             service_type,
-#             warranty_status,
-#             pickup_drop,
-#             slot,
-#             next_service_due,
-#             digipin,
-#             marked_as_completed,
-#         )
-
-#         # Insert into DB
-#         conn = sqlite3.connect(DB_PATH)
-#         conn.execute(
-#             """
-#             INSERT INTO bookings
-#             (customer_name, email, vehicle_model, license_plate, last_service_date, service_type, warranty_status,
-#              pickup_drop, slot, next_service_due_in_X_days, digipin, marked_as_completed)
-#             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-#             """,
-#             data,
-#         )
-#         conn.commit()
-#         conn.close()
-#         return redirect(url_for("bookings"))
-
-#     # GET: Show all bookings ordered by created_at desc
-#     conn = sqlite3.connect(DB_PATH)
-#     conn.row_factory = sqlite3.Row
-#     cur = conn.execute("SELECT * FROM bookings ORDER BY created_at DESC")
-#     bookings_list = cur.fetchall()
-#     conn.close()
-
-#     return render_template("bookings.html", bookings=bookings_list)
-
 @app.route("/bookings", methods=["GET", "POST"])
 def bookings():
     if request.method == "POST":
@@ -258,6 +198,14 @@ def update_completion(booking_id):
     except Exception as e:
         print(f"Error updating booking {booking_id}: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/weekly_calendar")
+def weekly_calendar():
+    return render_template("weekly_calendar.html")
+
+@app.route("/logs")
+def logs():
+    return render_template("logs.html")
 
 if __name__ == "__main__":
     init_db()
